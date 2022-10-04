@@ -22,6 +22,7 @@ module.exports.handler = async (event) => {
           password: hashedPwd,
           gifsNames: {},
           gifsTags: {},
+          gifsPublicUrls: {},
         },
         tableName
       ).catch((error) => {

@@ -9,6 +9,7 @@ provider:
   environment:
     tableName: ${self:custom.tableName}
     JWT_SECRET: mygifsharekey
+    GIF_SECRET: mygifencryptkey
     gifUploadBucket: ${self:custom.gifUploadBucket}
   iam:
     role:
@@ -71,12 +72,28 @@ functions:
           method: POST
           authorizer:
             name: customAuthorizer
+  gifDelete:
+    handler: src/lambdas/deleteGif.handler
+    events:
+      - httpApi:
+          path: /deleteGif
+          method: POST
+          authorizer:
+            name: customAuthorizer
   registerUser:
     handler: src/lambdas/registerUser.handler
     events:
       - httpApi:
           path: /register
           method: POST
+  getGifPublicUrl:
+    handler: src/lambdas/getGifPublicUrl.handler
+    events:
+      - httpApi:
+          path: /getGifPublicUrl/{encryptedName}
+          method: GET
+          authorizer:
+            name: customAuthorizer
   authenticateUser:
     handler: src/lambdas/authenticateUser.handler
     events:

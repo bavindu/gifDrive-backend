@@ -41,6 +41,7 @@ module.exports.handler = async (event) => {
     gifsNames: user.gifsNames,
     gifsTags: user.gifsTags,
     gifsList: gifsList,
+    gifsPublicUrls: user.gifsPublicUrls,
   };
   return Responses._200(userObj);
 };

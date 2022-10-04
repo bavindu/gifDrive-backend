@@ -44,23 +44,38 @@ const Dynamo = {
     return res;
   },
 
-  async update(tableName, primaryKeyValue, key, fileName, tags) {
+  async update(tableName, primaryKeyValue, key, fileName, tags, encryptedUrl) {
     const params = {
       TableName: tableName,
       Key: {
         email: primaryKeyValue,
       },
-      UpdateExpression: `set gifsNames.#key = :fileName, gifsTags.#key = :tags`,
+      UpdateExpression: `set gifsNames.#key = :fileName, gifsTags.#key = :tags, gifsPublicUrls.#key = :encryptedUrl`,
       ExpressionAttributeNames: {
         "#key": key,
       },
       ExpressionAttributeValues: {
         ":fileName": fileName,
         ":tags": tags,
+        ":encryptedUrl": encryptedUrl,
+      },
+    };
+    return await documentClient.update(params).promise();
+  },
+
+  async delete(tableName, email, key) {
+    const params = {
+      TableName: tableName,
+      Key: {
+        email: email,
+      },
+      UpdateExpression: `REMOVE gifsNames.#key , gifsTags.#key`,
+      ExpressionAttributeNames: {
+        "#key": key,
       },
     };
     console.log("params", params);
-    return await documentClient.update(params).promise();
+    return documentClient.update(params).promise();
   },
 };
 
