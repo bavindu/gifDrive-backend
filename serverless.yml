@@ -1,0 +1,116 @@
+service: gif-share-backend
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-south-1
+  environment:
+    tableName: ${self:custom.tableName}
+    JWT_SECRET: mygifsharekey
+    gifUploadBucket: ${self:custom.gifUploadBucket}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - s3:*
+          Resource: "*"
+  httpApi:
+    cors: true
+    authorizers:
+      customAuthorizer:
+        type: request
+        functionName: verifyToken
+
+custom:
+  tableName: users
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+    migration:
+      dir: offline/migration
+  gifUploadBucket: gif-share-upload-bucket
+
+functions:
+  verifyToken:
+    handler: src/lambdas/verifyToken.handler
+  getUser:
+    handler: src/lambdas/getUser.handler
+    events:
+      - httpApi:
+          path: /getUser/{email}
+          method: GET
+          authorizer:
+            name: customAuthorizer
+  gifUpload:
+    handler: src/lambdas/gifUpload.handler
+    events:
+      - httpApi:
+          path: /gifUpload/{email}
+          method: POST
+          authorizer:
+            name: customAuthorizer
+  gifUpdate:
+    handler: src/lambdas/updateGif.handler
+    events:
+      - httpApi:
+          path: /updateGif
+          method: POST
+          authorizer:
+            name: customAuthorizer
+  registerUser:
+    handler: src/lambdas/registerUser.handler
+    events:
+      - httpApi:
+          path: /register
+          method: POST
+  authenticateUser:
+    handler: src/lambdas/authenticateUser.handler
+    events:
+      - httpApi:
+          path: /authenticate
+          method: POST
+  hello:
+    handler: src/lambdas/app.hello
+    events:
+      - httpApi:
+          path: /hello
+          method: GET
+
+resources:
+  Resources:
+    GifShareDynamoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    GifShareUploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: Private
+        BucketName: ${self:custom.gifUploadBucket}
+
+plugins:
+  - serverless-offline
+  - serverless-dynamodb-local
