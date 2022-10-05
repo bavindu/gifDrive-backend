@@ -8,7 +8,7 @@ const saltRounds = 10;
 module.exports.handler = async (event) => {
   try {
     const user = JSON.parse(event.body);
-    if (user && user.email && user.password) {
+    if (user && user.email && user.password && user.name) {
       const existUser = await Dynamo.get(user.email, tableName);
       if (existUser && existUser.Item) {
         return Responses._400("User Already Exist");
@@ -19,16 +19,14 @@ module.exports.handler = async (event) => {
         {
           email: user.email,
           userID: userID,
+          name: user.name,
           password: hashedPwd,
           gifsNames: {},
           gifsTags: {},
           gifsPublicUrls: {},
         },
         tableName
-      ).catch((error) => {
-        console.error(error);
-        return Responses._400(error);
-      });
+      );
       if (res) {
         return Responses._200("registerded successfully");
       }

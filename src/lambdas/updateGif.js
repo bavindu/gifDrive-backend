@@ -10,13 +10,20 @@ module.exports.handler = async (event) => {
     return Responses._400({ error: "Incomplete Data" });
   }
   const user = await Dynamo.get(email, tableName);
-  if (!user) {
+  if (!(user && user.Item)) {
     return Responses._400({ error: "User Not Found" });
   }
   try {
-    const res = await Dynamo.update(tableName, email, key, newName, tags);
+    const res = await Dynamo.updateNameandTags(
+      tableName,
+      email,
+      key,
+      newName,
+      tags
+    );
     return Responses._200({ message: "Gif Updated" });
   } catch (error) {
+    console.error(error);
     return Responses._500({ error: "Internal Server Error" });
   }
 };

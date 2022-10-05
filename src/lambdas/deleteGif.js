@@ -11,8 +11,8 @@ module.exports.handler = async (event) => {
   if (!(email && key)) {
     return Responses._400({ error: "Incomplete Data" });
   }
-  const user = await Dynamo.get(email, tableName);
-  if (!user) {
+  const res = await Dynamo.get(email, tableName);
+  if (!(res && res.Item)) {
     return Responses._400({ error: "User Not Found" });
   }
   try {

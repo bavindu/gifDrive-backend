@@ -11,11 +11,11 @@ module.exports.handler = async (event) => {
   }
 
   let email = event.pathParameters.email;
-  const user = await Dynamo.get(email, tableName);
-  if (!(user && user.userID)) {
+  const res = await Dynamo.get(email, tableName);
+  if (!(res && res.Item)) {
     return Responses._400({ error: "User Not Found" });
   }
-
+  const user = res.Item;
   const userID = user.userID;
   const s3Params = {
     Bucket: BUCKET,

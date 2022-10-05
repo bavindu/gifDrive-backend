@@ -10,7 +10,11 @@ module.exports.handler = async (event) => {
     return Responses._400("All Inputs is required!");
   }
   const user = await Dynamo.get(email, tableName);
-  if (user && (await bcrypt.compare(password, user.password))) {
+  if (
+    user &&
+    user.Item &&
+    (await bcrypt.compare(password, user.Item.password))
+  ) {
     const token = jwt.sign({ user_email: email }, process.env.JWT_SECRET, {
       expiresIn: "2h",
     });

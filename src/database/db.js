@@ -17,31 +17,14 @@ const Dynamo = {
         email,
       },
     };
-    const data = await documentClient.get(params).promise();
-    if (!data) {
-      throw Error(
-        `Error Occourd while getting data for email ${email} in ${TableName}`
-      );
-    } else {
-      if (data.Item) {
-        return data.Item;
-      } else {
-        return null;
-      }
-    }
+    return documentClient.get(params).promise();
   },
   async write(data, TableName) {
     const params = {
       TableName,
       Item: data,
     };
-    const res = await documentClient.put(params).promise();
-    if (!res) {
-      throw Error(
-        `Error Occourd while write data for email ${email} in ${TableName}`
-      );
-    }
-    return res;
+    return documentClient.put(params).promise();
   },
 
   async update(tableName, primaryKeyValue, key, fileName, tags, encryptedUrl) {
@@ -60,7 +43,25 @@ const Dynamo = {
         ":encryptedUrl": encryptedUrl,
       },
     };
-    return await documentClient.update(params).promise();
+    return documentClient.update(params).promise();
+  },
+
+  async updateNameandTags(tableName, primaryKeyValue, key, fileName, tags) {
+    const params = {
+      TableName: tableName,
+      Key: {
+        email: primaryKeyValue,
+      },
+      UpdateExpression: `set gifsNames.#key = :fileName, gifsTags.#key = :tags`,
+      ExpressionAttributeNames: {
+        "#key": key,
+      },
+      ExpressionAttributeValues: {
+        ":fileName": fileName,
+        ":tags": tags,
+      },
+    };
+    return documentClient.update(params).promise();
   },
 
   async delete(tableName, email, key) {

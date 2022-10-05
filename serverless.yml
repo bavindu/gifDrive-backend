@@ -100,12 +100,6 @@ functions:
       - httpApi:
           path: /authenticate
           method: POST
-  hello:
-    handler: src/lambdas/app.hello
-    events:
-      - httpApi:
-          path: /hello
-          method: GET
 
 resources:
   Resources:

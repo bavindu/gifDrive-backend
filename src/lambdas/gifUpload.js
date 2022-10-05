@@ -15,7 +15,8 @@ module.exports.handler = async (event) => {
   try {
     const email = event.pathParameters.email;
     const { filename, data } = extractFile(event);
-    const user = await Dynamo.get(email, tableName);
+    const res = await Dynamo.get(email, tableName);
+    const user = res.Item;
     const saveFileName = user["userID"] + "/" + filename;
     const encryptedName = CryptoJS.AES.encrypt(
       saveFileName,
